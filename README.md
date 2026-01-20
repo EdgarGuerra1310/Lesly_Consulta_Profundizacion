@@ -72,7 +72,7 @@ O ejecuta con Uvicorn directamente:
 uvicorn main:app --reload
 ```
 
-La aplicación estará disponible en `http://localhost:8000/chat_biae`
+La aplicación estará disponible en `http://localhost:8000/asistente_profundizacion`
 
 ## 📁 Estructura del proyecto
 
@@ -88,7 +88,7 @@ chat_biae/
 
 ## 🔧 Uso
 
-1. **Acceder a la interfaz web**: Abre tu navegador y ve a `http://localhost:8000/chat_biae`
+1. **Acceder a la interfaz web**: Abre tu navegador y ve a `http://localhost:8000/asistente_profundizacion`
 2. **Cargar documentos**: Usa la interfaz para cargar o referenciar materiales del curso
 3. **Hacer preguntas**: Escribe tus preguntas en la interfaz de chat
 4. **Obtener respuestas**: El sistema busca contenido relevante en la base de datos Qdrant y genera respuestas contextuales usando OpenAI
