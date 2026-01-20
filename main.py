@@ -253,7 +253,7 @@ async def startup_event():
     print("✅ Aplicación lista")
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/chat_biae", response_class=HTMLResponse)
 async def home(request: Request):
     """Página principal del chat."""
     return templates.TemplateResponse("index.html", {"request": request})
