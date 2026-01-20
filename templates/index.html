@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Curso PDF - Qdrant</title>
+    <title>Chat sobre contenido del curso</title>
     <style>
         * {
             margin: 0;
@@ -12,8 +12,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #96daeb 0%, #306ddd 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -23,168 +23,284 @@
 
         .container {
             background-color: #ffffff;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border-radius: 20px;
             max-width: 900px;
             width: 100%;
-            padding: 30px;
+            padding: 35px;
         }
 
-        h2 {
+        .header {
             text-align: center;
-            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .header-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .welcome-message {
+            background: linear-gradient(135deg, #f3e9f7 0%, #afd7ee 100%);
+            padding: 20px;
+            border-radius: 12px;
             margin-bottom: 25px;
-            font-size: 28px;
+            color: #4a5568;
+            font-size: 16px;
+            line-height: 1.6;
         }
 
         .section {
             margin-bottom: 20px;
         }
 
-        label {
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-weight: 600;
-            color: #333;
-            display: block;
-            margin-bottom: 8px;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 16px;
         }
 
-        select, input[type="text"] {
+        .section-label-icon {
+            font-size: 20px;
+        }
+
+        select {
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            font-size: 15px;
-            transition: border-color 0.3s;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            font-size: 16px;
+            color: #4a5568;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
         }
 
-        select:focus, input[type="text"]:focus {
+        select:hover {
+            border-color: #cbd5e0;
+        }
+
+        select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #0b30d3;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .flex-row {
+        select:disabled {
+            background-color: #f7fafc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .button-row {
             display: flex;
             gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
+            margin-top: 10px;
         }
 
-        .flex-row select {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        button {
+        .btn {
             padding: 12px 24px;
             border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        button:hover:not(:disabled) {
+        .btn-primary {
+            background: linear-gradient(135deg, #8c9ff1 0%, #3e4af3 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
-        button:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            background: #ccc;
+        .btn-primary:disabled {
+            background: #cbd5e0;
             cursor: not-allowed;
             transform: none;
         }
 
-        #mensaje-saludo {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: #333;
-            line-height: 1.6;
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 10px 20px;
         }
 
-        #chatbox {
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            height: 450px;
-            overflow-y: auto;
-            background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
-            margin: 20px 0;
+        .btn-secondary:hover:not(:disabled) {
+            background: #cbd5e0;
         }
 
-        #chatbox::-webkit-scrollbar {
-            width: 8px;
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        #chatbox::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        #chatbox::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-
-        .user {
-            color: #1976d2;
-            font-weight: 600;
-            margin: 12px 0;
-            padding: 10px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            border-left: 4px solid #1976d2;
-        }
-
-        .bot {
-            color: #2e7d32;
-            margin: 12px 0;
-            padding: 10px;
-            background: #e8f5e9;
-            border-radius: 8px;
-            border-left: 4px solid #2e7d32;
-            line-height: 1.6;
-        }
-
-        .input-area {
+        .questions-row {
             display: flex;
             gap: 10px;
         }
 
-        #send-btn {
-            min-width: 100px;
+        .questions-row select:first-child {
+            flex: 0 0 40%;
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .questions-row select:last-child {
+            flex: 1;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        #chatbox {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            height: 380px;
+            overflow-y: auto;
+            background: #f7fafc;
+            margin-bottom: 20px;
         }
 
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 10px;
+        #chatbox::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chatbox::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chatbox::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+
+        #chatbox::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 16px;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #a8b4fc 0%, #c4b5fd 100%);
+            color: #1a202c;
+            margin-left: 20%;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            background: white;
+            color: #2d3748;
+            margin-right: 20%;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state-icon {
+            font-size: 50px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        #message-input {
+            width: 100%;
+            padding: 14px 80px 14px 48px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            font-size: 16px;
+            color: #4a5568;
+            transition: all 0.3s;
+        }
+
+        #message-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #message-input:disabled {
+            background-color: #f7fafc;
+            cursor: not-allowed;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #a0aec0;
+        }
+
+        .send-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #031a58 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
             border-radius: 8px;
-            border-left: 4px solid #c62828;
-            margin: 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         @media (max-width: 768px) {
@@ -192,153 +308,171 @@
                 padding: 20px;
             }
 
-            h2 {
-                font-size: 24px;
+            .header h1 {
+                font-size: 20px;
             }
 
-            .flex-row {
+            .questions-row {
                 flex-direction: column;
             }
 
-            .flex-row select {
-                width: 100%;
-            }
-
-            button {
-                width: 100%;
+            .questions-row select:first-child {
+                flex: 1;
             }
 
             #chatbox {
-                height: 350px;
+                height: 300px;
+            }
+
+            .user-message,
+            .bot-message {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            #message-input {
+                padding-right: 70px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>💬 Chat sobre contenido del curso</h2>
-
-        <div id="mensaje-saludo">Cargando información del usuario...</div>
-
-        <div class="section">
-            <label for="collection-select">📚 Seleccionar Colección:</label>
-            <div class="flex-row">
-                <select id="collection-select">
-                    <option value="">-- Selecciona una colección --</option>
-                </select>
-                <button id="load-collection-btn">Cargar</button>
-            </div>
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">💬</div>
+            <h1>Chat sobre contenido del curso</h1>
         </div>
 
+        <!-- Welcome Message -->
+        <div id="welcome-message" class="welcome-message"></div>
+
+        <!-- Sección: Preguntas Recomendadas -->
         <div class="section">
-            <label for="tip-type-select">📌 Preguntas recomendadas:</label>
-            <div class="flex-row">
-                <select id="tip-type-select" disabled>
+            <label class="section-label">
+                <span class="section-label-icon">📌</span>
+                Preguntas recomendadas:
+            </label>
+            <div class="questions-row">
+                <select id="question-type-select" disabled>
                     <option value="">-- Tipo de pregunta --</option>
                     <option value="contenido">📘 Contenido</option>
                     <option value="contexto">🌍 Contexto</option>
                     <option value="reflexion">🧠 Reflexión</option>
                 </select>
-
-                <select id="tip-question-select" disabled>
+                <select id="question-select" disabled>
                     <option value="">-- Pregunta recomendada --</option>
                 </select>
-
-                <button id="use-tip-btn" disabled>Usar</button>
+            </div>
+            <div class="button-row">
+                <button id="use-question-btn" class="btn btn-secondary" disabled>Usar</button>
             </div>
         </div>
 
-        <div id="chatbox"></div>
+        <!-- Chatbox -->
+        <div id="chatbox">
+            <div class="empty-state">
+                <div class="empty-state-icon">💭</div>
+                <div class="empty-state-text">Iniciando chat...</div>
+            </div>
+        </div>
 
-        <div class="input-area">
+        <!-- Input Area -->
+        <div class="input-container">
+            <span class="input-icon">✏️</span>
             <input 
                 type="text" 
                 id="message-input" 
-                placeholder="✍️ Selecciona una colección para comenzar..." 
-                autocomplete="off" 
+                placeholder="Cargando..."
                 disabled
             />
-            <button id="send-btn" disabled>Enviar</button>
+            <button id="send-btn" class="send-button" disabled>Enviar</button>
         </div>
     </div>
 
     <script>
-        let tipsData = {};
+        // Variables globales
         let currentCollection = '';
+        let cursoId = '';
         let usuario = '';
         let usernombre = '';
+        let questionsData = {};
 
-        // Función para obtener parámetros de la URL
-        function obtenerParametro(nombre) {
+        // Obtener parámetros de la URL
+        function getURLParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(nombre);
+            return urlParams.get(name);
         }
 
-        // Obtener parámetros del usuario
-        function inicializarUsuario() {
-            usuario = obtenerParametro('user') || 'usuario_default';
-            const curid = obtenerParametro('curid');
-            usernombre = obtenerParametro('usernombre') || 'Usuario';
-
-            const mensajeSaludo = document.getElementById('mensaje-saludo');
+        // Inicializar usuario
+        function initializeUser() {
+            const urlUser = getURLParameter('user');
+            const urlUsername = getURLParameter('usernombre');
+            cursoId = getURLParameter('curid');
             
-            if (usuario && usernombre) {
-                mensajeSaludo.innerHTML = `
-                    <strong>👋 Hola, ${usernombre}</strong><br>
-                    En este espacio podrás consultar cualquier duda que tengas con respecto 
-                    al curso ${curid}.
-                `;
+            if (urlUser && urlUsername) {
+                usuario = urlUser;
+                usernombre = urlUsername;
             } else {
-                mensajeSaludo.textContent = 'Bienvenido al sistema de consultas del curso.';
+                usuario = 'usuario_prueba';
+                usernombre = 'Invitado';
+            }
+            
+            const welcomeMsg = document.getElementById('welcome-message');
+            let cursoInfo = cursoId ? `<br><small>📚 Curso ID: ${cursoId}</small>` : '';
+            
+            welcomeMsg.innerHTML = `
+                <strong>👋 Hola, ${usernombre}</strong><br>
+                En este espacio podrás consultar cualquier duda que tengas con respecto al curso ${cursoId}.
+            `;
+            
+            // Si viene curid desde Moodle, cargar automáticamente
+            if (cursoId) {
+                cargarCursoDesdeId(cursoId);
             }
         }
 
-        // Cargar colecciones disponibles
-        async function cargarColecciones() {
+        // Cargar curso automáticamente desde ID
+        async function cargarCursoDesdeId(id_curso) {
+            // Construir nombre de colección: Curso_{id}
+            currentCollection = `Curso_${id_curso}`;
+            
+            console.log(`🔄 Cargando automáticamente colección: ${currentCollection}`);
+            
             try {
-                const res = await fetch('/api/collections');
+                // Verificar que la colección existe
+                const response = await fetch('/api/collections');
+                const data = await response.json();
                 
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
+                const collectionExists = data.collections.some(col => col.name === currentCollection);
+                
+                if (!collectionExists) {
+                    addBotMessage(`❌ No se encontró la colección para el curso ID: ${id_curso}. Por favor contacta al administrador.`);
+                    return;
                 }
                 
-                const data = await res.json();
-                console.log('Colecciones recibidas:', data);
+                // Habilitar inputs
+                document.getElementById('message-input').disabled = false;
+                document.getElementById('send-btn').disabled = false;
+                document.getElementById('message-input').placeholder = 'Escribe tu pregunta aquí...';
                 
-                const select = document.getElementById('collection-select');
-                select.innerHTML = '<option value="">-- Selecciona una colección --</option>';
+                // Limpiar chatbox
+                document.getElementById('chatbox').innerHTML = '';
+                addBotMessage(`Bienvenido al curso 📚. ¿En qué puedo ayudarte?`);
                 
-                if (data.collections && data.collections.length > 0) {
-                    data.collections.forEach(col => {
-                        const option = document.createElement('option');
-                        option.value = col.name;
-                        
-                        // Mostrar nombre y cantidad de puntos
-                        const pointsText = col.points_count > 0 
-                            ? `(${col.points_count} documentos)` 
-                            : '(vacía)';
-                        option.textContent = `${col.name} ${pointsText}`;
-                        
-                        select.appendChild(option);
-                    });
-                } else {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = 'No hay colecciones disponibles';
-                    select.appendChild(option);
-                }
-            } catch (err) {
-                console.error('Error cargando colecciones:', err);
-                addMessage('bot', '❌ Error al cargar las colecciones disponibles. Verifica que Qdrant esté funcionando.');
+                // Cargar preguntas recomendadas
+                await loadRecommendedQuestions();
+                
+            } catch (error) {
+                console.error('Error cargando curso:', error);
+                addBotMessage('❌ Error al cargar el curso. Por favor recarga la página.');
             }
         }
 
         // Cargar preguntas recomendadas
-        async function cargarPreguntasRecomendadas() {
-            if (!currentCollection) return;
-
+        async function loadRecommendedQuestions() {
             try {
-                const res = await fetch('/api/recommended_questions', {
+                const response = await fetch('/api/recommended_questions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -347,116 +481,64 @@
                     })
                 });
                 
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
+                questionsData = await response.json();
                 
-                tipsData = await res.json();
-                console.log('Preguntas recomendadas cargadas:', tipsData);
-
-                document.getElementById('tip-type-select').disabled = false;
-                document.getElementById('use-tip-btn').disabled = false;
-            } catch (err) {
-                console.error('Error cargando preguntas:', err);
-                addMessage('bot', '⚠️ No se pudieron cargar las preguntas recomendadas, pero puedes escribir tu propia pregunta.');
+                document.getElementById('question-type-select').disabled = false;
+                document.getElementById('use-question-btn').disabled = false;
+            } catch (error) {
+                console.error('Error cargando preguntas:', error);
             }
         }
 
-        // Manejar carga de colección
-        document.getElementById('load-collection-btn').addEventListener('click', async () => {
-            const select = document.getElementById('collection-select');
-            currentCollection = select.value;
-
-            if (!currentCollection) {
-                alert('Por favor selecciona una colección');
-                return;
-            }
-
-            document.getElementById('message-input').disabled = false;
-            document.getElementById('send-btn').disabled = false;
-            document.getElementById('message-input').placeholder = '✍️ Escribe tu pregunta aquí...';
-
-            const chatbox = document.getElementById('chatbox');
-            chatbox.innerHTML = '';
-            addMessage('bot', `📚 Colección "${currentCollection}" cargada. ¿En qué puedo ayudarte?`);
-
-            await cargarPreguntasRecomendadas();
-        });
-
-        // Manejar tipo de pregunta
-        document.getElementById('tip-type-select').addEventListener('change', function() {
+        // Cambiar tipo de pregunta
+        document.getElementById('question-type-select').addEventListener('change', function() {
+            const questionSelect = document.getElementById('question-select');
             const selectedType = this.value;
-            const questionSelect = document.getElementById('tip-question-select');
-
-            questionSelect.innerHTML = '<option value="">-- Pregunta recomendada --</option>';
-            questionSelect.disabled = true;
-
-            if (!selectedType || !tipsData[selectedType]) return;
-
-            const questions = tipsData[selectedType];
             
-            if (questions && questions.length > 0) {
-                questions.forEach(q => {
+            questionSelect.innerHTML = '<option value="">-- Pregunta recomendada --</option>';
+            
+            if (selectedType && questionsData[selectedType]) {
+                questionsData[selectedType].forEach(q => {
                     const option = document.createElement('option');
                     option.value = q;
                     option.textContent = q;
                     questionSelect.appendChild(option);
                 });
                 questionSelect.disabled = false;
+            } else {
+                questionSelect.disabled = true;
             }
         });
 
         // Usar pregunta recomendada
-        document.getElementById('use-tip-btn').addEventListener('click', () => {
-            const question = document.getElementById('tip-question-select').value;
-            if (!question) {
-                alert('Por favor selecciona una pregunta');
-                return;
+        document.getElementById('use-question-btn').addEventListener('click', function() {
+            const questionSelect = document.getElementById('question-select');
+            const question = questionSelect.value;
+            
+            if (question) {
+                document.getElementById('message-input').value = question;
+                document.getElementById('message-input').focus();
             }
-
-            const input = document.getElementById('message-input');
-            input.value = question;
-            input.focus();
         });
 
-        // Agregar mensaje al chat
-        function addMessage(role, text) {
+        // Añadir mensaje del bot
+        function addBotMessage(text) {
             const chatbox = document.getElementById('chatbox');
-            const div = document.createElement('div');
-            div.className = role;
-
-            if (role === 'bot') {
-                text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-                text = text.replace(/\n/g, '<br>');
-            }
-
-            div.innerHTML = (role === 'user' ? '👤 ' : '🤖 ') + text;
-            chatbox.appendChild(div);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            messageDiv.innerHTML = '🤖 ' +text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            chatbox.appendChild(messageDiv);
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        // Animación de escritura
-        async function typeMessage(role, fullText, delay = 5) {
+        // Añadir mensaje del usuario
+        function addUserMessage(text) {
             const chatbox = document.getElementById('chatbox');
-            const div = document.createElement('div');
-            div.className = role;
-            div.innerHTML = (role === 'bot' ? '🤖 ' : '👤 ');
-            chatbox.appendChild(div);
-
-            let formattedText = fullText
-                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                .replace(/\n/g, '<br>');
-
-            let i = 0;
-            function typeChar() {
-                if (i < formattedText.length) {
-                    div.innerHTML = (role === 'bot' ? '🤖 ' : '👤 ') + formattedText.slice(0, i + 1);
-                    chatbox.scrollTop = chatbox.scrollHeight;
-                    i++;
-                    setTimeout(typeChar, delay);
-                }
-            }
-            typeChar();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.textContent ='👤 ' + text;
+            chatbox.appendChild(messageDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         // Enviar mensaje
@@ -466,15 +548,16 @@
                 return;
             }
 
-            addMessage('user', message);
+            addUserMessage(message);
             
             const sendBtn = document.getElementById('send-btn');
-            const input = document.getElementById('message-input');
+            const messageInput = document.getElementById('message-input');
+            
             sendBtn.disabled = true;
-            input.disabled = true;
+            messageInput.disabled = true;
 
             try {
-                const res = await fetch('/api/chat', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -484,48 +567,54 @@
                     })
                 });
 
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta');
                 }
 
-                const data = await res.json();
-                await typeMessage('bot', data.answer, 15);
-            } catch (err) {
-                console.error('Error:', err);
-                addMessage('bot', '❌ Error al obtener respuesta. Por favor intenta nuevamente.');
+                const data = await response.json();
+                addBotMessage(data.answer);
+            } catch (error) {
+                console.error('Error:', error);
+                addBotMessage('❌ Error al obtener respuesta. Por favor intenta nuevamente.');
             } finally {
                 sendBtn.disabled = false;
-                input.disabled = false;
-                input.focus();
+                messageInput.disabled = false;
+                messageInput.focus();
             }
         }
 
-        // Event listener para botón enviar
-        document.getElementById('send-btn').addEventListener('click', () => {
+        // Event listeners
+        document.getElementById('send-btn').addEventListener('click', function() {
             const input = document.getElementById('message-input');
-            const msg = input.value.trim();
-            if (msg) {
-                sendMessage(msg);
+            const message = input.value.trim();
+            
+            if (message) {
+                sendMessage(message);
                 input.value = '';
             }
         });
 
-        // Event listener para Enter
-        document.getElementById('message-input').addEventListener('keypress', (e) => {
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                const msg = e.target.value.trim();
-                if (msg) {
-                    sendMessage(msg);
-                    e.target.value = '';
+                const message = this.value.trim();
+                if (message) {
+                    sendMessage(message);
+                    this.value = '';
                 }
             }
         });
 
-        // Inicializar al cargar la página
-        window.onload = async () => {
-            inicializarUsuario();
-            await cargarColecciones();
-        };
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', async function() {
+            initializeUser();
+            
+            // Si NO viene curid, mostrar error (debe venir desde Moodle)
+            if (!cursoId) {
+                document.getElementById('chatbox').innerHTML = '';
+                addBotMessage('⚠️ Acceso incorrecto. Este chat debe abrirse desde Moodle.');
+                document.getElementById('message-input').placeholder = 'Chat no disponible';
+            }
+        });
     </script>
 </body>
 </html>
