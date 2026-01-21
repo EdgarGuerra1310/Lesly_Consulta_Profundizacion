@@ -3,6 +3,7 @@ import json
 import random
 from typing import List, Dict
 import numpy as np
+import psycopg2
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -41,6 +42,55 @@ EMBED_MODEL = "BAAI/bge-base-en-v1.5"
 print(f"🔄 Cargando modelo de embeddings: {EMBED_MODEL}")
 embedding_model = SentenceTransformer(EMBED_MODEL)
 print(f"✅ Modelo cargado. Dimensión: {embedding_model.get_sentence_embedding_dimension()}")
+
+# ==============================
+# 🗄️ BASE DE DATOS (PostgreSQL)
+# ==============================
+
+DB_CONFIG = {
+    "dbname": "proyectos_ia",
+    "user": "postgres",
+    "password": "1edgarGUERRA",
+    "host": "localhost",
+    "port": "5432"
+}
+
+def get_db_connection():
+    return psycopg2.connect(**DB_CONFIG)
+
+def crear_tabla_interacciones():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS interacciones_cursos (
+            id SERIAL PRIMARY KEY,
+            curso TEXT NOT NULL,
+            usuario TEXT NOT NULL,
+            mensaje TEXT NOT NULL,
+            respuesta TEXT NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def guardar_interaccion(curso, usuario, mensaje, respuesta):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO interacciones_cursos
+            (curso, usuario, mensaje, respuesta)
+            VALUES (%s, %s, %s, %s)
+        """, (curso, usuario, mensaje, respuesta))
+        conn.commit()
+    except Exception as e:
+        print(f"⚠️ Error guardando interacción: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # ==============================
 # 📊 MODELOS PYDANTIC
@@ -375,6 +425,14 @@ async def chat(request: ChatRequest):
             temperature=0.4
         )
         answer = response.choices[0].message.content.strip()
+
+         # 💾 Guardar interacción
+        guardar_interaccion(
+            curso=req.collection_name,
+            usuario=req.usuario,
+            mensaje=req.message,
+            respuesta=answer
+        )
         
         return {"answer": answer}
         
@@ -384,7 +442,7 @@ async def chat(request: ChatRequest):
             status_code=500, 
             detail=f"Error procesando la consulta: {str(e)}"
         )
-
+        
 
 # ==============================
 # 🚀 EJECUTAR SERVIDOR
