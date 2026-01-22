@@ -13,6 +13,7 @@ from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 from docx import Document
+import tiktoken
 
 # ==============================
 # ⚙️ CONFIGURACIÓN INICIAL
@@ -20,13 +21,18 @@ from docx import Document
 
 load_dotenv()
 
-app = FastAPI(title="Chat Curso PDF - Qdrant")
+app = FastAPI(title="Chat Cursos de Profundización")
 
 # Templates
 templates = Jinja2Templates(directory="templates")
 
-# OpenAI (solo para generación de texto)
-openai_client = OpenAI(api_key="API_KEY_OPENAI")
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    raise ValueError("No se encontró la API key de OpenAI. Verifica tu .env")
+
+openai_client = OpenAI(api_key=api_key)
+
 
 # Qdrant
 QDRANT_URL = os.getenv("QDRANT_URL", "http://91.99.108.245:6333")
@@ -39,7 +45,6 @@ qdrant_client = QdrantClient(
 
 # Modelo de embeddings
 EMBED_MODEL = "BAAI/bge-base-en-v1.5"
-print(f"🔄 Cargando modelo de embeddings: {EMBED_MODEL}")
 embedding_model = SentenceTransformer(EMBED_MODEL)
 print(f"✅ Modelo cargado. Dimensión: {embedding_model.get_sentence_embedding_dimension()}")
 
@@ -50,47 +55,35 @@ print(f"✅ Modelo cargado. Dimensión: {embedding_model.get_sentence_embedding_
 DB_CONFIG = {
     "dbname": "proyectos_ia",
     "user": "postgres",
-    "password": "1edgarGUERRA",
+    "password": "adm",
     "host": "localhost",
-    "port": "5432"
+    "port": "5432",
 }
 
 def get_db_connection():
-    return psycopg2.connect(**DB_CONFIG)
+    return psycopg2.connect(
+        **DB_CONFIG,
+        options="-c client_encoding=UTF8"
+    )
 
 def crear_tabla_interacciones():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS interacciones_cursos (
+        CREATE TABLE IF NOT EXISTS public.interacciones_cursos (
             id SERIAL PRIMARY KEY,
             curso TEXT NOT NULL,
             usuario TEXT NOT NULL,
             mensaje TEXT NOT NULL,
             respuesta TEXT NOT NULL,
+            tokens_mensaje INT DEFAULT 0,
+            tokens_respuesta INT DEFAULT 0,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+        );
     """)
     conn.commit()
     cursor.close()
     conn.close()
-
-def guardar_interaccion(curso, usuario, mensaje, respuesta):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO interacciones_cursos
-            (curso, usuario, mensaje, respuesta)
-            VALUES (%s, %s, %s, %s)
-        """, (curso, usuario, mensaje, respuesta))
-        conn.commit()
-    except Exception as e:
-        print(f"⚠️ Error guardando interacción: {e}")
-    finally:
-        cursor.close()
-        conn.close()
-
 
 # ==============================
 # 📊 MODELOS PYDANTIC
@@ -110,6 +103,11 @@ class QuestionRequest(BaseModel):
 # ==============================
 
 embedding_cache = {}
+encoding = tiktoken.encoding_for_model("gpt-4o-mini")
+
+def contar_tokens(texto: str) -> int:
+    """Cuenta los tokens de un texto según el modelo."""
+    return len(encoding.encode(texto))
 
 def embed_query(query: str) -> np.ndarray:
     """Genera embedding para una consulta con cache usando sentence-transformers."""
@@ -179,6 +177,29 @@ def get_random_chunks(collection_name: str, n: int = 5) -> List[Dict]:
     except Exception as e:
         print(f"Error obteniendo chunks aleatorios: {e}")
         return []
+
+# ==============================
+# 🛠️ FUNCIÓN DE NORMALIZACIÓN UTF-8
+# ==============================
+
+def normalizar_texto(texto: str) -> str:
+    """Asegura que cualquier texto sea UTF-8 válido."""
+    if not texto:
+        return texto
+    
+    try:
+        if isinstance(texto, str):
+            return texto.encode('utf-8', errors='replace').decode('utf-8', errors='replace')
+        elif isinstance(texto, bytes):
+            return texto.decode('utf-8', errors='replace')
+        else:
+            return str(texto)
+    except Exception as e:
+        print(f"Error normalizando texto: {e}")
+        try:
+            return texto.encode('ascii', errors='ignore').decode('ascii')
+        except:
+            return str(texto)
 
 # ==============================
 # 💬 GENERADOR DE PREGUNTAS
@@ -258,7 +279,8 @@ def leer_prompt_desde_word(path_docx: str) -> str:
     try:
         doc = Document(path_docx)
         texto = "\n".join([p.text for p in doc.paragraphs])
-        return texto.strip()
+        texto_limpio = texto.strip()
+        return texto_limpio.encode('utf-8', errors='replace').decode('utf-8')
     except Exception as e:
         print(f"Error leyendo prompt base: {e}")
         return """Eres un asistente pedagógico especializado en educación.
@@ -299,6 +321,7 @@ def formatear_chunk_para_contexto(chunk: Dict) -> str:
 @app.on_event("startup")
 async def startup_event():
     """Inicializa recursos al arrancar la aplicación."""
+    crear_tabla_interacciones()
     print("🚀 Iniciando aplicación...")
     print("✅ Aplicación lista")
 
@@ -318,7 +341,6 @@ async def get_collections():
         result = []
         for collection in collections.collections:
             try:
-                # Usar count en lugar de get_collection para evitar errores de validación
                 count_result = qdrant_client.count(
                     collection_name=collection.name,
                     exact=True
@@ -330,10 +352,8 @@ async def get_collections():
                     "vectors_count": count_result.count
                 })
             except Exception as e:
-                # Si falla, intentar con método alternativo
                 print(f"Advertencia al obtener info de {collection.name}: {e}")
                 try:
-                    # Método alternativo usando scroll para contar
                     scroll_result = qdrant_client.scroll(
                         collection_name=collection.name,
                         limit=1,
@@ -342,15 +362,10 @@ async def get_collections():
                     )
                     result.append({
                         "name": collection.name,
-                        # "points_count": 0,  # No podemos saber el total exacto
-                        # "vectors_count": 0
                     })
                 except:
-                    # Si todo falla, al menos mostrar el nombre
                     result.append({
                         "name": collection.name
-                        # "points_count": 0,
-                        # "vectors_count": 0
                     })
         
         return {"collections": result}
@@ -390,9 +405,11 @@ async def get_recommended_questions(request: QuestionRequest):
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
-    """Procesa un mensaje del chat y devuelve la respuesta."""
+    """Procesa un mensaje del chat y devuelve la respuesta, guardando tokens."""
+    conn = None 
+    cursor = None
+    
     try:
-        # Buscar contexto relevante en Qdrant
         relevant_chunks = search_qdrant(
             collection_name=request.collection_name,
             query=request.message,
@@ -404,20 +421,17 @@ async def chat(request: ChatRequest):
                 "answer": "Lo siento, no encontré información relevante en la colección seleccionada. Por favor, intenta reformular tu pregunta."
             }
         
-        # Formatear contexto
         context_parts = [
             formatear_chunk_para_contexto(chunk)[:800] 
             for chunk in relevant_chunks
         ]
         context = "\n\n".join(context_parts)
         
-        # Crear prompt con plantilla
         prompt = PROMPT_TEMPLATE.format(
             context=context, 
             question=request.message
         )
         
-        # Generar respuesta con OpenAI
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
@@ -426,15 +440,53 @@ async def chat(request: ChatRequest):
         )
         answer = response.choices[0].message.content.strip()
 
-         # 💾 Guardar interacción
-        guardar_interaccion(
-            curso=req.collection_name,
-            usuario=req.usuario,
-            mensaje=req.message,
-            respuesta=answer
-        )
-        
-        return {"answer": answer}
+        # Contar tokens reales: prompt completo enviado a OpenAI
+        tokens_mensaje = contar_tokens(prompt)
+        tokens_respuesta = contar_tokens(answer)
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            collection_safe = normalizar_texto(request.collection_name)
+            usuario_safe = normalizar_texto(request.usuario)
+            mensaje_safe = normalizar_texto(request.message)
+            respuesta_safe = normalizar_texto(answer)
+            
+            cursor.execute("""
+                INSERT INTO public.interacciones_cursos
+                (curso, usuario, mensaje, respuesta, tokens_mensaje, tokens_respuesta)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                collection_safe,
+                usuario_safe,
+                mensaje_safe,
+                respuesta_safe,
+                tokens_mensaje,
+                tokens_respuesta
+            ))
+            conn.commit()
+            print(f"✅ Interacción guardada: {usuario_safe} - {tokens_mensaje + tokens_respuesta} tokens")
+            
+        except Exception as e:
+            print(f"⚠️ Error guardando interacción: {e}")
+            print(f"   Collection: {repr(request.collection_name[:50])}")
+            print(f"   Usuario: {repr(request.usuario)}")
+            print(f"   Mensaje: {repr(request.message[:50])}")
+            print(f"   Respuesta: {repr(answer[:50])}")
+            if conn:
+                conn.rollback()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+        return {
+            "answer": answer,
+            "tokens_mensaje": tokens_mensaje,
+            "tokens_respuesta": tokens_respuesta
+        }
         
     except Exception as e:
         print(f"Error en chat: {e}")
@@ -442,7 +494,7 @@ async def chat(request: ChatRequest):
             status_code=500, 
             detail=f"Error procesando la consulta: {str(e)}"
         )
-        
+    
 
 # ==============================
 # 🚀 EJECUTAR SERVIDOR
