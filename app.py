@@ -333,7 +333,7 @@ async def startup_event():
 @app.get("/asistente_profundizacion", response_class=HTMLResponse)
 async def home(request: Request):
     """Página principal del chat."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index_con_voz.html", {"request": request})
 
 
 @app.get("/api/collections")
