@@ -57,7 +57,7 @@ print(f"✅ Modelo cargado. Dimensión: {embedding_model.get_sentence_embedding_
 DB_CONFIG = {
     "dbname": "proyectos_ia",
     "user": "postgres",
-    "password": "adm",
+    "password": "1edgarGUERRA",
     "host": "localhost",
     "port": "5432",
 }
@@ -80,8 +80,8 @@ def crear_tabla_interacciones():
             respuesta TEXT NOT NULL,
             tokens_mensaje INT DEFAULT 0,
             tokens_respuesta INT DEFAULT 0,
-            timestamp_mensaje TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP,
-            timestamp_respuesta TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP,
+            timestamp_mensaje TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+            timestamp_respuesta TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
             latencia_ms INT DEFAULT 0       
         );
     """)
@@ -437,7 +437,7 @@ async def chat(request: ChatRequest):
         )
         lima_tz = pytz.timezone("America/Lima")
         timestamp_mensaje = datetime.now(lima_tz)
-        
+        print("🔑 OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
