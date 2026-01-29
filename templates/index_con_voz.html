@@ -319,13 +319,13 @@
         }
 
         .input-wrapper {
-            position: relative;
+            position: relative; 
             flex: 1;
         }
 
         #message-input {
             width: 100%;
-            padding: 14px 80px 14px 48px;
+            padding: 14px 16px 14px 48px;
             border-radius: 12px;
             border: 2px solid #e2e8f0;
             font-size: 16px;
@@ -354,30 +354,30 @@
         }
 
         .send-button {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
+            position: static;
+            margin-left: 8px;
             background: linear-gradient(135deg, #667eea 0%, #031a58 100%);
             color: white;
             border: none;
-            padding: 8px 20px;
+            padding: 10px 20px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            align-self: center;
         }
 
         .send-button:hover:not(:disabled) {
-            transform: translateY(-50%) scale(1.05);
+            transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .send-button:disabled {
             background: #d0cbe0;
             cursor: not-allowed;
-            transform: translateY(-50%);
+            opacity: 0.9;
         }
 
         .status-message {
@@ -435,7 +435,7 @@
             }
 
             #message-input {
-                padding-right: 70px;
+                padding-right: 16px;
             }
 
             #voice-btn {
@@ -498,8 +498,8 @@
                     placeholder="Cargando..."
                     disabled
                 />
-                <button id="send-btn" class="send-button" disabled>Enviar</button>
             </div>
+            <button id="send-btn" class="send-button" disabled>Enviar</button>
         </div>
     </div>
 
@@ -818,7 +818,8 @@
             const welcomeMsg = document.getElementById('welcome-message');
             welcomeMsg.innerHTML = `
                 <strong>👋 Hola, ${usernombre}</strong><br>
-                En este espacio podrás consultar cualquier duda que tengas con respecto al curso ${cursoName}. Recuerda que el asistente solo podrá resolver dudas pedagógicas.
+                En este espacio podrás interactuar con el asistente pedagógico para reflexionar, profundizar y analizar los contenidos del curso y situaciones de tu práctica docente.<br>
+                Su propósito es acompañar tu proceso formativo y fortalecer tus decisiones pedagógicas. Formula tu pregunta, considerando tu contexto y experiencia docente.
             `;
             
             if (cursoId) {
