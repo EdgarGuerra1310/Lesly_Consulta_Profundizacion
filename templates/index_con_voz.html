@@ -380,6 +380,22 @@
             opacity: 0.9;
         }
 
+        /* Ajustes para listas dentro del mensaje del bot */
+        .bot-message .message-content {
+            display: block;
+            white-space: pre-wrap;
+        }
+
+        .bot-message ul {
+            margin: 8px 0;
+            padding-left: 1.2em;
+            list-style-position: inside;
+        }
+
+        .bot-message li {
+            margin: 4px 0;
+        }
+
         .status-message {
             text-align: center;
             padding: 8px;
@@ -624,6 +640,91 @@
             messageDiv.appendChild(speakBtn);
             
             chatbox.appendChild(messageDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        // Añade un mensaje del bot preparado para streaming. Devuelve referencias para actualizar.
+        function addStreamingBotMessage(initialText = '🤖 Procesando información...') {
+            const chatbox = document.getElementById('chatbox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+
+            const messageContent = document.createElement('span');
+            messageContent.textContent = '';
+
+            const speakBtn = document.createElement('button');
+            speakBtn.className = 'speak-btn';
+            speakBtn.innerHTML = '🔊';
+            speakBtn.title = 'Leer en voz alta';
+            speakBtn.disabled = true; // habilitar al finalizar
+
+            messageDiv.appendChild(messageContent);
+            messageDiv.appendChild(speakBtn);
+            chatbox.appendChild(messageDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            return { messageDiv, messageContent, speakBtn };
+        }
+
+        // Efecto de máquina de escribir: escribe `text` dentro de `element` carácter a carácter.
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatTypingPartial(text) {
+            // Escape HTML then preserve newlines and bullet markers as plain bullets
+            const escaped = escapeHtml(text);
+            // Convert lines starting with '- ' or '* ' to a bullet char
+            const withBullets = escaped.replace(/(^|\n)[\s]*[-\*]\s+/g, '$1• ');
+            // Preserve newlines as <br>
+            return withBullets.replace(/\n/g, '<br>');
+        }
+
+        function formatFinalHtml(text) {
+            // Escape HTML first
+            let out = escapeHtml(text);
+            // Bold **text** -> <strong>
+            out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Convert bullet lines into simple HTML list
+            const lines = out.split('\n');
+            let inList = false;
+            let result = '';
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (/^\s*[-\*]\s+/.test(line)) {
+                    if (!inList) { result += '<ul>'; inList = true; }
+                    const item = line.replace(/^\s*[-\*]\s+/, '');
+                    result += '<li>' + item + '</li>';
+                } else {
+                    if (inList) { result += '</ul>'; inList = false; }
+                    if (line.trim() === '') {
+                        result += '<br>';
+                    } else {
+                        result += '<p>' + line + '</p>';
+                    }
+                }
+            }
+            if (inList) result += '</ul>';
+            return result;
+        }
+
+        async function typeText(element, text, speed = 15) {
+            // removed processing class handling
+            const chatbox = document.getElementById('chatbox');
+            let acc = '';
+            for (let i = 0; i < text.length; i++) {
+                acc += text[i];
+                element.innerHTML = formatTypingPartial(acc);
+                chatbox.scrollTop = chatbox.scrollHeight;
+                await new Promise(res => setTimeout(res, speed));
+            }
+            // Al final aplicar formato HTML más rico (negritas, listas, párrafos)
+            element.innerHTML = formatFinalHtml(text.replace(/^🤖\s*/, ''));
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
@@ -914,8 +1015,47 @@
                     throw new Error('Error en la respuesta');
                 }
 
-                const data = await response.json();
-                addBotMessage(data.answer);
+                // Intentar leer en streaming si el body es un ReadableStream
+                if (response.body && response.body.getReader) {
+                    const { messageContent, speakBtn } = addStreamingBotMessage('🤖 Procesando información...');
+                    // indicador eliminado — continuar directamente
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let done = false;
+                    let accumulated = '';
+
+                    while (!done) {
+                        const { value, done: readerDone } = await reader.read();
+                        if (value) {
+                            const chunk = decoder.decode(value, { stream: !readerDone });
+                            accumulated += chunk;
+                        }
+                        done = readerDone;
+                    }
+
+                    // Intentar parsear JSON si el backend envió JSON chunked
+                    let finalText = accumulated;
+                    try {
+                        const maybeJson = JSON.parse(accumulated);
+                        if (maybeJson && typeof maybeJson.answer === 'string') {
+                            finalText = maybeJson.answer;
+                        }
+                    } catch (e) {
+                        // no es JSON, usar accumulated como texto final
+                    }
+
+                    await typeText(messageContent, '🤖 ' + finalText, 16);
+                    speakBtn.disabled = false;
+                    speakBtn.onclick = () => speakText(finalText, speakBtn);
+                } else {
+                    // Fallback a JSON completo
+                    const data = await response.json();
+                    const { messageContent, speakBtn } = addStreamingBotMessage('🤖 Procesando información...');
+                    // indicador eliminado — continuar directamente
+                    await typeText(messageContent, '🤖 ' + (data.answer || ''), 16);
+                    speakBtn.disabled = false;
+                    speakBtn.onclick = () => speakText(data.answer || '', speakBtn);
+                }
             } catch (error) {
                 console.error('Error:', error);
                 addBotMessage('❌ Error al obtener respuesta. Por favor intenta nuevamente.');
