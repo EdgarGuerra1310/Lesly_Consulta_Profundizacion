@@ -719,17 +719,39 @@
             return result;
         }
 
+        function isTabVisible() {
+            return document.visibilityState === 'visible';
+        }
+
         async function typeText(element, text, speed = 15) {
-            // removed processing class handling
             const chatbox = document.getElementById('chatbox');
+
+            // Si la pestaña NO está visible → mostrar todo de una
+            if (!isTabVisible()) {
+                element.innerHTML = formatFinalHtml(text.replace(/^🤖\s*/, ''));
+                chatbox.scrollTop = chatbox.scrollHeight;
+                return;
+            }
+
             let acc = '';
+
             for (let i = 0; i < text.length; i++) {
                 acc += text[i];
+
                 element.innerHTML = formatTypingPartial(acc);
                 chatbox.scrollTop = chatbox.scrollHeight;
+
+                // Si durante la escritura se cambia de pestaña → terminar
+                if (!isTabVisible()) {
+                    element.innerHTML = formatFinalHtml(text.replace(/^🤖\s*/, ''));
+                    chatbox.scrollTop = chatbox.scrollHeight;
+                    return;
+                }
+
                 await new Promise(res => setTimeout(res, speed));
             }
-            // Al final aplicar formato HTML más rico (negritas, listas, párrafos)
+
+            // Aplicar formato final (negritas, listas, párrafos)
             element.innerHTML = formatFinalHtml(text.replace(/^🤖\s*/, ''));
             chatbox.scrollTop = chatbox.scrollHeight;
         }
