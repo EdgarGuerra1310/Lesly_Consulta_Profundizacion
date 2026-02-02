@@ -331,6 +331,11 @@
             font-size: 16px;
             color: #4a5568;
             transition: all 0.3s;
+            font-family: inherit;
+            resize: none;
+            overflow: hidden;
+            min-height: 50px;
+            max-height: 200px;
         }
 
         #message-input:focus {
@@ -452,6 +457,8 @@
 
             #message-input {
                 padding-right: 16px;
+                min-height: 45px;
+                max-height: 150px;
             }
 
             #voice-btn {
@@ -508,12 +515,11 @@
             <button id="voice-btn" title="Presiona para hablar" disabled>🎤</button>
             <div class="input-wrapper">
                 <span class="input-icon">✏️</span>
-                <input 
-                    type="text" 
+                <textarea 
                     id="message-input" 
                     placeholder="Cargando..."
                     disabled
-                />
+                ></textarea>
             </div>
             <button id="send-btn" class="send-button" disabled>Enviar</button>
         </div>
@@ -1128,8 +1134,13 @@
             }
         });
 
-        // Detener grabación si el usuario empieza a escribir
+        // Detener grabación y auto-redimensionar textarea si el usuario empieza a escribir
         document.getElementById('message-input').addEventListener('input', function() {
+            // Auto-redimensionar textarea según contenido
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+            
+            // Detener grabación si está en progreso
             if (isRecording) {
                 stopRecording();
             }
