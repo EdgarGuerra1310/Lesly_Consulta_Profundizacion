@@ -409,6 +409,7 @@
             const urlUser = getURLParameter('user');
             const urlUsername = getURLParameter('usernombre');
             cursoId = getURLParameter('curid');
+            cursoName = getURLParameter('cursoName');
             
             if (urlUser && urlUsername) {
                 usuario = urlUser;
@@ -422,8 +423,8 @@
             let cursoInfo = cursoId ? `<br><small>📚 Curso ID: ${cursoId}</small>` : '';
             
             welcomeMsg.innerHTML = `
-                <strong>👋 Hola, ${usernombre}</strong><br>
-                En este espacio podrás consultar cualquier duda que tengas con respecto al curso ${cursoId}.
+                <strong>👋 Hola, ${urlUsername}</strong><br>
+                En este espacio podrás consultar cualquier duda que tengas con respecto al curso ${cursoName}.
             `;
             
             // Si viene curid desde Moodle, cargar automáticamente
