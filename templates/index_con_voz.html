@@ -333,11 +333,29 @@
             transition: all 0.3s;
             font-family: inherit;
             resize: none;
-            overflow: hidden;
+            overflow-y: auto;
             min-height: 50px;
             max-height: 200px;
         }
 
+
+        #message-input::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #message-input::-webkit-scrollbar-track {
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        #message-input::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 10px;
+        }
+
+        #message-input::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
         #message-input:focus {
             outline: none;
             border-color: #667eea;
@@ -481,7 +499,7 @@
         <div id="welcome-message" class="welcome-message"></div>
 
         <!-- Sección: Preguntas Recomendadas -->
-        <div class="section">
+        <div class="section" style="display: none;">
             <label class="section-label">
                 <span class="section-label-icon">📌</span>
                 Preguntas recomendadas:
@@ -984,7 +1002,7 @@
                 document.getElementById('chatbox').innerHTML = '';
                 addBotMessage(`Bienvenido al curso. ¿En qué puedo ayudarte?`);
                 
-                await loadRecommendedQuestions();
+                // await loadRecommendedQuestions();
                 
             } catch (error) {
                 console.error('Error cargando curso:', error);
