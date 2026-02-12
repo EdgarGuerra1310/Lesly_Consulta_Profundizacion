@@ -640,6 +640,7 @@
         // Variables globales
         let currentCollection = '';
         let cursoId = '';
+        let collection = '';
         let usuario = '';
         let usernombre = '';
         let questionsData = {};
@@ -972,6 +973,7 @@
             const urlUser = getURLParameter('user');
             const urlUsername = getURLParameter('usernombre');
             cursoId = getURLParameter('curid');
+            collection = getURLParameter('collection')
             cursoName = getURLParameter('cursoName');
             
             if (urlUser && urlUsername) {
@@ -989,13 +991,13 @@
                 Su propósito es acompañar tu proceso formativo y fortalecer tus decisiones pedagógicas. Formula tu pregunta, considerando tu contexto y experiencia docente.
             `;
             
-            if (cursoId) {
-                cargarCursoDesdeId(cursoId);
+            if (collection) {
+                cargarCursoDesdeId(collection);
             }
         }
 
-        async function cargarCursoDesdeId(id_curso) {
-            currentCollection = `Curso_${id_curso}`;
+        async function cargarCursoDesdeId(collection) {
+            currentCollection = `Curso_${collection}`;
             
             console.log(`📄 Cargando automáticamente colección: ${currentCollection}`);
             
@@ -1006,7 +1008,7 @@
                 const collectionExists = data.collections.some(col => col.name === currentCollection);
                 
                 if (!collectionExists) {
-                    addBotMessage(`❌ No se encontró la colección para el curso ID: ${id_curso}. Por favor contacta al administrador.`);
+                    addBotMessage(`❌ No se encontró la colección para el curso ID: ${collection}. Por favor contacta al administrador.`);
                     return;
                 }
                 
