@@ -15,7 +15,6 @@ from openai import OpenAI
 from docx import Document
 from datetime import datetime
 import pytz
-import tiktoken
 
 # ==============================
 # ⚙️ CONFIGURACIÓN INICIAL
@@ -107,11 +106,6 @@ class QuestionRequest(BaseModel):
 # ==============================
 
 embedding_cache = {}
-encoding = tiktoken.encoding_for_model("gpt-4o-mini")
-
-def contar_tokens(texto: str) -> int:
-    """Cuenta los tokens de un texto según el modelo."""
-    return len(encoding.encode(texto))
 
 def embed_query(query: str) -> np.ndarray:
     """Genera embedding para una consulta con cache usando sentence-transformers."""
@@ -444,12 +438,14 @@ async def chat(request: ChatRequest):
             max_tokens=500,
             temperature=0.4
         )
+        usage = response.usage
         answer = response.choices[0].message.content.strip()
         timestamp_respuesta = datetime.now(lima_tz)
 
 
-        tokens_mensaje = contar_tokens(prompt)
-        tokens_respuesta = contar_tokens(answer)
+        tokens_mensaje = usage.prompt_tokens
+        tokens_respuesta = usage.completion_tokens
+        tokens_totales = usage.total_tokens
 
         latencia_ms = int((timestamp_respuesta - timestamp_mensaje).total_seconds() * 1000)
 
@@ -479,7 +475,7 @@ async def chat(request: ChatRequest):
                 latencia_ms
             ))
             conn.commit()
-            print(f"✅ Interacción guardada: {usuario_safe} - {tokens_mensaje + tokens_respuesta} tokens")
+            print(f"✅ Interacción guardada: {usuario_safe} - {tokens_totales} tokens")
             
         except Exception as e:
             print(f"⚠️ Error guardando interacción: {e}")
