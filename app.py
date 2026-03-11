@@ -27,13 +27,18 @@ app = FastAPI(title="Chat Cursos de Profundización")
 # Templates
 templates = Jinja2Templates(directory="templates")
 
-api_key = os.getenv("OPENAI_API_KEY")
+AZURE_API_KEY = os.getenv("AZURE_OPENAI_KEY")
+AZURE_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
-if not api_key:
-    raise ValueError("No se encontró la API key de OpenAI. Verifica tu .env")
+if not AZURE_API_KEY or not AZURE_ENDPOINT or not AZURE_DEPLOYMENT:
+    raise ValueError("No se encontraron las variables de Azure OpenAI en el .env")
 
-openai_client = OpenAI(api_key=api_key)
-
+openai_client = OpenAI(
+    api_key=AZURE_API_KEY,
+    base_url=f"{AZURE_ENDPOINT}/openai/deployments/{AZURE_DEPLOYMENT}",
+    default_query={"api-version": "2024-05-01-preview"}
+)
 
 # Qdrant
 QDRANT_URL = os.getenv("QDRANT_URL", "http://91.99.108.245:6333")
@@ -244,10 +249,10 @@ No incluyas explicaciones ni texto adicional fuera del JSON.
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AZURE_DEPLOYMENT,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=700,
-            temperature=0.2
+            max_tokens=500,
+            temperature=0.4
         )
 
         raw = response.choices[0].message.content.strip()
@@ -431,9 +436,9 @@ async def chat(request: ChatRequest):
         )
         lima_tz = pytz.timezone("America/Lima")
         timestamp_mensaje = datetime.now(lima_tz)
-        print("🔑 OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AZURE_DEPLOYMENT,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
             temperature=0.4
