@@ -61,7 +61,7 @@ print(f"✅ Modelo cargado. Dimensión: {embedding_model.get_sentence_embedding_
 DB_CONFIG = {
     "dbname": "proyectos_ia",
     "user": "postgres",
-    "password": "1edgarGUERRA",
+    "password": "adm",
     "host": "localhost",
     "port": "5432",
 }
@@ -101,6 +101,10 @@ class ChatRequest(BaseModel):
     message: str
     usuario: str
     collection_name: str
+    curid: str
+    rol: str
+    course_name: str
+
 
 class QuestionRequest(BaseModel):
     collection_name: str
@@ -432,7 +436,8 @@ async def chat(request: ChatRequest):
         
         prompt = PROMPT_TEMPLATE.format(
             context=context, 
-            question=request.message
+            question=request.message,
+            course_name=request.course_name
         )
         lima_tz = pytz.timezone("America/Lima")
         timestamp_mensaje = datetime.now(lima_tz)
@@ -459,17 +464,19 @@ async def chat(request: ChatRequest):
             conn = get_db_connection()
             cursor = conn.cursor()
             
+            curso_safe = normalizar_texto(request.curid)
             collection_safe = normalizar_texto(request.collection_name)
             usuario_safe = normalizar_texto(request.usuario)
             mensaje_safe = normalizar_texto(request.message)
+            rol_safe = normalizar_texto(request.rol)
             respuesta_safe = normalizar_texto(answer)
             
             cursor.execute("""
                 INSERT INTO public.interacciones_cursos
-                (curso, usuario, mensaje, respuesta, tokens_mensaje, tokens_respuesta, timestamp_mensaje, timestamp_respuesta, latencia_ms)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (curso, usuario, mensaje, respuesta, tokens_mensaje, tokens_respuesta, timestamp_mensaje, timestamp_respuesta, latencia_ms, coleccion, rol)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
-                collection_safe,
+                curso_safe,
                 usuario_safe,
                 mensaje_safe,
                 respuesta_safe,
@@ -477,13 +484,16 @@ async def chat(request: ChatRequest):
                 tokens_respuesta,
                 timestamp_mensaje,
                 timestamp_respuesta,
-                latencia_ms
+                latencia_ms,
+                collection_safe,
+                rol_safe
             ))
             conn.commit()
             print(f"✅ Interacción guardada: {usuario_safe} - {tokens_totales} tokens")
             
         except Exception as e:
             print(f"⚠️ Error guardando interacción: {e}")
+            print(f"   Curso: {repr(request.curid[:50])}")
             print(f"   Collection: {repr(request.collection_name[:50])}")
             print(f"   Usuario: {repr(request.usuario)}")
             print(f"   Mensaje: {repr(request.message[:50])}")
