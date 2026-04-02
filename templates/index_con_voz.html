@@ -463,7 +463,7 @@
             cursor: pointer;
             transition: all var(--trans);
             flex-shrink: 0;
-            align-self: center
+            align-self: center;
             display: flex; align-items: center; gap: 7px;
         }
 
@@ -848,6 +848,7 @@
     }
 
     function startRecording() {
+        if (isRecording) return;
         if (!recognition) { alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome, Edge o Safari.'); return; }
         if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; }
         isRecording = true;
@@ -877,14 +878,18 @@
             stopRecording();
             input.focus();
         };
+
         recognition.onerror = e => {
             const msgs = {
-                'no-speech': '⚠️ No se detectó voz. Intenta nuevamente.',
+                'no-speech':     '⚠️ No se detectó voz. Intenta nuevamente.',
                 'audio-capture': '❌ No se puede acceder al micrófono.',
-                'not-allowed': '❌ Permiso de micrófono denegado.',
-                'network': '❌ Error de conexión.'
+                'not-allowed':   '❌ Permiso de micrófono denegado.',
+                'network':       '❌ Error de conexión.',
+                'aborted':       ''
             };
-            showStatus(msgs[e.error] || '❌ Error en el reconocimiento de voz');
+            if (e.error !== 'aborted') {
+                showStatus(msgs[e.error] || '❌ Error en el reconocimiento de voz');
+            }
             stopRecording();
         };
         recognition.onend = () => { if (isRecording) stopRecording(); };
