@@ -61,7 +61,7 @@ print(f"✅ Modelo cargado. Dimensión: {embedding_model.get_sentence_embedding_
 DB_CONFIG = {
     "dbname": "proyectos_ia",
     "user": "postgres",
-    "password": "adm",
+    "password": "1edgarGUERRA",
     "host": "localhost",
     "port": "5432",
 }
