@@ -677,7 +677,7 @@
     let collection = '';
     let usuario = '';
     let usernombre = '';
-    let cursoName = '';
+    let cursoname = '';
     let questionsData = {};
 
     // ============================================================
@@ -898,14 +898,14 @@
         const urlUsername = getURLParameter('usernombre');
         cursoId    = getURLParameter('curid') || '';
         collection = getURLParameter('collection') || '';
-        cursoName  = getURLParameter('cursoName') || '';
+        cursoname  = getURLParameter('cursoname') || '';
         const rolParam = getURLParameter('rol');
         rolUsuario = (rolParam === '1') ? 'docente' : 'testeo';
         usuario    = urlUser     || 'usuario_prueba';
         usernombre = urlUsername || 'Invitado';
 
         document.getElementById('course-name-display').textContent =
-            cursoName ? decodeURIComponent(cursoName) : '—';
+            cursoname ? decodeURIComponent(cursoname) : '—';
 
         document.getElementById('welcome-message').innerHTML = `
             <strong>👋 Hola, ${usernombre}</strong><br>
@@ -971,7 +971,7 @@
                     collection_name: currentCollection,
                     curid: cursoId,
                     rol: rolUsuario,
-                    course_name: cursoName
+                    course_name: cursoname
                 })
             });
 
