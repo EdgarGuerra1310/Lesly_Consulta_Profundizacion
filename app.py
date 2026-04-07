@@ -86,7 +86,9 @@ def crear_tabla_interacciones():
             tokens_respuesta INT DEFAULT 0,
             timestamp_mensaje TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
             timestamp_respuesta TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-            latencia_ms INT DEFAULT 0       
+            latencia_ms INT DEFAULT 0,
+            coleccion           TEXT,
+            rol                 TEXT,       
         );
     """)
     conn.commit()
